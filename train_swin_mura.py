@@ -39,27 +39,41 @@ class MURADataset(Dataset):
 
 def collect_patient_samples(root_dir):
     patients = {}
-    for patient in os.listdir(root_dir):
-        patient_path = os.path.join(root_dir, patient)
-        if not os.path.isdir(patient_path):
+    # 1. Loop through Body Parts (XR_ELBOW, XR_FINGER, etc.)
+    for body_part in os.listdir(root_dir):
+        body_part_path = os.path.join(root_dir, body_part)
+        if not os.path.isdir(body_part_path):
             continue
-
-        patient_samples = []
-        for study in os.listdir(patient_path):
-            study_path = os.path.join(patient_path, study)
-
-            if "positive" in study.lower():
-                label = 1
-            elif "negative" in study.lower():
-                label = 0
-            else:
+        
+        # 2. Loop through Patients inside that Body Part
+        for patient in os.listdir(body_part_path):
+            patient_path = os.path.join(body_part_path, patient)
+            if not os.path.isdir(patient_path):
                 continue
 
-            for img in os.listdir(study_path):
-                if img.lower().endswith((".png", ".jpg", ".jpeg")):
-                    patient_samples.append((os.path.join(study_path, img), label))
+            # We use a unique key in case 'patient0001' exists in two body parts
+            unique_patient_id = f"{body_part}_{patient}"
+            patient_samples = []
 
-        patients[patient] = patient_samples
+            # 3. Loop through Studies (positive/negative)
+            for study in os.listdir(patient_path):
+                study_path = os.path.join(patient_path, study)
+
+                if "positive" in study.lower():
+                    label = 1
+                elif "negative" in study.lower():
+                    label = 0
+                else:
+                    continue
+
+                # 4. Loop through Images
+                for img in os.listdir(study_path):
+                    if img.lower().endswith((".png", ".jpg", ".jpeg")):
+                        patient_samples.append((os.path.join(study_path, img), label))
+
+            if patient_samples:
+                patients[unique_patient_id] = patient_samples
+                
     return patients
 
 patients = collect_patient_samples(DATA_DIR)
