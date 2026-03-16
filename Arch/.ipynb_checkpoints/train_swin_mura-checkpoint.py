@@ -141,14 +141,7 @@ class_weights = torch.tensor(weights, dtype=torch.float32).to(device)
 
 # %%
 # ---------------- Model ----------------
-# Create the model
-model = timm.create_model('swin_base_patch4_window7_224', pretrained=False, num_classes=2)
-
-# Load the weights you just trained on your unlabeled data
-# We use strict=False because the MAE model has a "decoder" we don't need for classification
-checkpoint = torch.load("mae_bone_features.pth")
-model.load_state_dict(checkpoint, strict=False)
-
+model = timm.create_model('swin_base_patch4_window7_224', pretrained=True, num_classes=2)
 model.to(device)
 
 # %%
